@@ -1,0 +1,49 @@
+[2026-05-13T11:11:01.453+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: workshop_etl_3.producer_kafka manual__2026-05-13T11:08:40.310154+00:00 [queued]>
+[2026-05-13T11:11:01.470+0000] {taskinstance.py:1956} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: workshop_etl_3.producer_kafka manual__2026-05-13T11:08:40.310154+00:00 [queued]>
+[2026-05-13T11:11:01.471+0000] {taskinstance.py:2170} INFO - Starting attempt 2 of 3
+[2026-05-13T11:11:01.498+0000] {taskinstance.py:2191} INFO - Executing <Task(PythonOperator): producer_kafka> on 2026-05-13 11:08:40.310154+00:00
+[2026-05-13T11:11:01.512+0000] {standard_task_runner.py:60} INFO - Started process 743 to run task
+[2026-05-13T11:11:01.517+0000] {standard_task_runner.py:87} INFO - Running: ['***', 'tasks', 'run', 'workshop_etl_3', 'producer_kafka', 'manual__2026-05-13T11:08:40.310154+00:00', '--job-id', '30', '--raw', '--subdir', 'DAGS_FOLDER/dag.py', '--cfg-path', '/tmp/tmpky1xbkb9']
+[2026-05-13T11:11:01.523+0000] {standard_task_runner.py:88} INFO - Job 30: Subtask producer_kafka
+[2026-05-13T11:11:01.631+0000] {task_command.py:423} INFO - Running <TaskInstance: workshop_etl_3.producer_kafka manual__2026-05-13T11:08:40.310154+00:00 [running]> on host 2a0cdc7a7bae
+[2026-05-13T11:11:01.759+0000] {taskinstance.py:2480} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='JuanParedes' AIRFLOW_CTX_DAG_ID='workshop_etl_3' AIRFLOW_CTX_TASK_ID='producer_kafka' AIRFLOW_CTX_EXECUTION_DATE='2026-05-13T11:08:40.310154+00:00' AIRFLOW_CTX_TRY_NUMBER='2' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-05-13T11:08:40.310154+00:00'
+[2026-05-13T11:11:01.839+0000] {conn.py:380} INFO - <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+[2026-05-13T11:11:01.840+0000] {conn.py:1205} INFO - Probing node bootstrap-0 broker version
+[2026-05-13T11:11:01.842+0000] {conn.py:418} ERROR - Connect attempt to <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]> returned error 111. Disconnecting.
+[2026-05-13T11:11:01.843+0000] {conn.py:919} INFO - <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: Closing connection. KafkaConnectionError: 111 ECONNREFUSED
+[2026-05-13T11:11:01.889+0000] {conn.py:380} INFO - <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: connecting to localhost:9092 [('::1', 9092, 0, 0) IPv6]
+[2026-05-13T11:11:01.890+0000] {conn.py:418} ERROR - Connect attempt to <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]> returned error 111. Disconnecting.
+[2026-05-13T11:11:01.891+0000] {conn.py:919} INFO - <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv6 ('::1', 9092, 0, 0)]>: Closing connection. KafkaConnectionError: 111 ECONNREFUSED
+[2026-05-13T11:11:01.939+0000] {conn.py:380} INFO - <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv4 ('127.0.0.1', 9092)]>: connecting to localhost:9092 [('127.0.0.1', 9092) IPv4]
+[2026-05-13T11:11:01.940+0000] {conn.py:418} ERROR - Connect attempt to <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv4 ('127.0.0.1', 9092)]> returned error 111. Disconnecting.
+[2026-05-13T11:11:01.940+0000] {conn.py:919} INFO - <BrokerConnection node_id=bootstrap-0 host=localhost:9092 <connecting> [IPv4 ('127.0.0.1', 9092)]>: Closing connection. KafkaConnectionError: 111 ECONNREFUSED
+[2026-05-13T11:11:01.941+0000] {taskinstance.py:2698} ERROR - Task failed with exception
+Traceback (most recent call last):
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/models/taskinstance.py", line 433, in _execute_task
+    result = execute_callable(context=context, **execute_callable_kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 199, in execute
+    return_value = self.execute_callable()
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/airflow/operators/python.py", line 216, in execute_callable
+    return self.python_callable(*self.op_args, **self.op_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/kafka_streaming/kafka_producer.py", line 98, in run_producer
+    producer = build_producer(KAFKA_BOOTSTRAP)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/airflow/kafka_streaming/kafka_producer.py", line 57, in build_producer
+    return KafkaProducer(
+           ^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/kafka/producer/kafka.py", line 381, in __init__
+    client = KafkaClient(metrics=self._metrics, metric_group_prefix='producer',
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/kafka/client_async.py", line 244, in __init__
+    self.config['api_version'] = self.check_version(timeout=check_timeout)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/airflow/.local/lib/python3.11/site-packages/kafka/client_async.py", line 900, in check_version
+    raise Errors.NoBrokersAvailable()
+kafka.errors.NoBrokersAvailable: NoBrokersAvailable
+[2026-05-13T11:11:01.956+0000] {taskinstance.py:1138} INFO - Marking task as UP_FOR_RETRY. dag_id=workshop_etl_3, task_id=producer_kafka, execution_date=20260513T110840, start_date=20260513T111101, end_date=20260513T111101
+[2026-05-13T11:11:01.979+0000] {standard_task_runner.py:107} ERROR - Failed to execute job 30 for task producer_kafka (NoBrokersAvailable; 743)
+[2026-05-13T11:11:01.995+0000] {local_task_job_runner.py:234} INFO - Task exited with return code 1
+[2026-05-13T11:11:02.022+0000] {taskinstance.py:3280} INFO - 0 downstream tasks scheduled from follow-on schedule check

@@ -1,0 +1,147 @@
+x-airflow-common: &airflow-common
+  build: .
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: mysql+pymysql://airflow:airflow@mysql_airflow:3306/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    PYTHONPATH: /opt/airflow
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./scripts:/opt/airflow/scripts
+    - ./datos:/opt/airflow/datos
+    - ./logs:/opt/airflow/logs
+    - ./modelo:/opt/airflow/modelo
+    - ./database:/opt/airflow/database
+    - ./kafka_streaming:/opt/airflow/kafka_streaming
+    - ./notebooks:/opt/airflow/notebooks
+  depends_on:
+    mysql_airflow:
+      condition: service_healthy
+  networks:
+    - etl_network
+
+services:
+
+# Base de datos de Airflow 
+
+  mysql_airflow:
+    image: mysql:8.0
+    container_name: mysql_airflow
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: airflow
+      MYSQL_USER: airflow
+      MYSQL_PASSWORD: airflow
+    volumes:
+      - mysql_airflow_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "airflow", "-pairflow"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - etl_network
+
+# Base de datos de predicciones 
+
+  mysql_predictions:
+    image: mysql:8.0
+    container_name: mysql_predictions
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: predictions_db
+      MYSQL_USER: predictions_user
+      MYSQL_PASSWORD: predictions_password
+    ports:
+      - "3308:3306"           # expuesto en 3308 para no colisionar con mysql_airflow
+    volumes:
+      - mysql_predictions_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "predictions_user", "-ppredictions_password"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - etl_network
+
+# Kafka 
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - etl_network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - etl_network
+
+# Airflow 
+
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow_init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate &&
+        airflow users create \
+          --username admin \
+          --firstname Admin \
+          --lastname ETL \
+          --role Admin \
+          --email admin@etl.com \
+          --password admin
+    restart: on-failure
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow_webserver
+    command: airflow webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql_airflow:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: always
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow_scheduler
+    command: airflow scheduler
+    depends_on:
+      mysql_airflow:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    restart: always
+
+networks:
+  etl_network:
+    driver: bridge
+
+volumes:
+  mysql_airflow_data:
+  mysql_predictions_data:
