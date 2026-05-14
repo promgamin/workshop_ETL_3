@@ -1,0 +1,8 @@
+logs/
+__pycache__/
+*.pyc
+
+datos/archivos_parquet/
+datos/combined/
+
+.ipynb_checkpoints/
